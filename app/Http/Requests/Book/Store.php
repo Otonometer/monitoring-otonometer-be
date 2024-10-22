@@ -30,7 +30,7 @@ class Store extends FormRequest
             'description' => ['nullable', 'string'],
             'image' => ['required', 'image', 'mimes:jpeg,png,jpg,svg', 'max:2048'],
             'rating' => ['required', 'numeric', 'min:0', 'max:5'],
-            'download_uri' => ['nullable', 'string', 'url'],
+            'file' => ['required', 'file', 'mimes:pdf'],
         ];
     }
     /**

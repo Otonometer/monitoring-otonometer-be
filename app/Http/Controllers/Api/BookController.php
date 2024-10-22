@@ -39,7 +39,6 @@ class BookController extends Controller
 
         $books = $books->get();
 
-
         return (new OKResponse($books, count($books)))->toResponse();
     }
 
@@ -49,18 +48,28 @@ class BookController extends Controller
             'author' => $request->author,
             'description' => $request->description,
             'rating' => $request->rating,
-            'download_uri' => $request->download_uri,
         ];
 
-        $file = $request->file('image');
-        $fileext = $file->getClientOriginalExtension();
-        $filename = time() . '.' . $fileext;
+        $image = $request->file('image');
+        $imageext = $image->getClientOriginalExtension();
+        $imagename = time() . '.' . $imageext;
         $path = 'images/book';
 
-        $file->move($path, $filename);
+        $image->move($path, $imagename);
 
-        $data['image_uri'] = $path . '/' . $filename;
+        $data['image_uri'] = $path . '/' . $imagename;
 
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $fileext = $file->getClientOriginalExtension();
+            $filename = time() . '.' . $fileext;
+            $path = 'storage/book';
+
+            $file->move($path, $filename);
+
+            $data['download_uri'] = $path . '/' . $filename;
+        }
 
         $book = Book::create($data);
         return (new CreatedResponse($book))->toResponse();
@@ -83,21 +92,35 @@ class BookController extends Controller
             'author' => $request->author,
             'description' => $request->description,
             'rating' => $request->rating,
-            'download_uri' => $request->download_uri,
         ];
 
         if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $fileext = $file->getClientOriginalExtension();
-            $filename = time() . '.' . $fileext;
+            $image = $request->file('image');
+            $imageext = $image->getClientOriginalExtension();
+            $imagename = time() . '.' . $imageext;
             $path = 'images/book';
 
-            $file->move($path, $filename);
+            $image->move($path, $imagename);
 
-            $data['image_uri'] = $path . '/' . $filename;
+            $data['image_uri'] = $path . '/' . $imagename;
 
             if (file_exists($book->image_uri)) {
                 unlink($book->image_uri);
+            }
+        }
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $fileext = $file->getClientOriginalExtension();
+            $filename = time() . '.' . $fileext;
+            $path = 'storage/book';
+
+            $file->move($path, $filename);
+
+            $data['download_uri'] = $path . '/' . $filename;
+
+            if (file_exists($book->download_uri)) {
+                unlink($book->download_uri);
             }
         }
 
@@ -107,16 +130,47 @@ class BookController extends Controller
 
     public function destroy(Request $request){
         $id = $request->query('id');
+
         if ($id == null) {
             return (new BadRequestErrorResponse('Book ID is required'))->toResponse();
         }
+
         $book = Book::find($request->id);
 
         if (!$book) {
             return (new NotFoundErrorResponse('Book not found'))->toResponse();
         }
 
+        if (file_exists($book->download_uri)) {
+            unlink($book->download_uri);
+        }
+
+        if (file_exists($book->image_uri)) {
+            unlink($book->image_uri);
+        }
+
         $book->delete();
         return (new OKResponse())->toResponse();
+    }
+
+    public function download(Request $request){
+        $id = $request->query('id');
+
+        if ($id == null) {
+            return (new BadRequestErrorResponse('Book ID is required'))->toResponse();
+        }
+
+        $book = Book::find($request->id);
+
+        if (!$book) {
+            return (new NotFoundErrorResponse('Book not found'))->toResponse();
+        }
+
+        $book->increment('download_count');
+        if (!file_exists($book->download_uri)) {
+            return (new NotFoundErrorResponse('File not found'))->toResponse();
+        }
+
+        return response()->download($book->download_uri);
     }
 }

@@ -10,4 +10,6 @@ Route::prefix('book')->group(function () {
     Route::post('/', [BookController::class, 'store']);
     Route::put('/', [BookController::class, 'update']);
     Route::delete('/', [BookController::class, 'destroy']);
+
+    Route::get('/download', [BookController::class, 'download']);
 });
