@@ -4,7 +4,10 @@
 /public/hot
 /public/storage
 /public/images/book/*
+/public/images/notification/*
+
 /public/storage/book/*
+
 /storage/*.key
 /storage/pail
 /vendor
