@@ -8,6 +8,7 @@ class Notification extends Model
 {
     protected $table = 'notification';
     protected $fillable = [
+        'type',
         'title',
         'description',
         'image_uri',

@@ -12,14 +12,23 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
-    public function index(){
-        $notification = Notification::orderByDesc('created_at')->first();
+    public function index(Request $request){
+        $notification = Notification::orderByDesc('created_at');
+
+        if ($request->query('take')) {
+            $notification = $notification->take($request->query('take'));
+        } else {
+            $notification = $notification->take(3);
+        }
+
+        $notification = $notification->get();
 
         return (new OKResponse($notification, 1))->toResponse();
     }
 
     public function store(NotificationStoreRequest $request){
         $data = [
+            'type' => $request->type,
             'title' => $request->title,
             'description' => $request->description,
             'link_uri' => $request->link_uri,

@@ -25,7 +25,8 @@ class Store extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'string', 'max:50'],
+            'type' => ['required', 'string', 'max:50'],
+            'title' => ['required', 'string', 'max:100'],
             'description' => ['required', 'string'],
             'image' => ['required', 'image', 'mimes:jpeg,png,jpg,svg', 'max:2048'],
             'link_uri' => ['required', 'string', 'url'],
